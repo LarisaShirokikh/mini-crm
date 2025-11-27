@@ -12,10 +12,10 @@ settings = get_settings()
 
 # Create async engine
 engine = create_async_engine(
-    str(settings.database_url),
-    pool_size=settings.db_pool_size,
-    max_overflow=settings.db_max_overflow,
-    echo=settings.db_echo,
+    str(settings.DATABASE_URL),
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
+    echo=settings.DB_ECHO,
 )
 
 # Session factory
