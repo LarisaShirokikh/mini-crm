@@ -1,4 +1,3 @@
-"""Alembic migration environment configuration."""
 
 from logging.config import fileConfig
 
@@ -6,7 +5,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
-from app.core.database import Base
+from app.db.base import Base  # <-- Исправленный импорт
 
 # Import all models for autogenerate
 from app.models import (  # noqa: F401
