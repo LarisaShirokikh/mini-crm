@@ -1,5 +1,3 @@
-
-
 from decimal import Decimal
 
 from app.core.exceptions import (
@@ -18,8 +16,12 @@ from app.repositories.contact import ContactRepository
 from app.repositories.deal import DealRepository
 
 
+def get_enum_value(value) -> str:
+    """Get string value from enum or return string as-is."""
+    return value.value if hasattr(value, 'value') else value
+
+
 class DealService:
-    
 
     def __init__(
         self,
@@ -46,7 +48,7 @@ class DealService:
         order_by: str = "created_at",
         order: str = "desc",
     ) -> tuple[list[Deal], int]:
-        
+
         # Members can only see their own deals' owner filter
         if not membership.can_manage_all_entities() and owner_id:
             if owner_id != membership.user_id:
@@ -76,7 +78,7 @@ class DealService:
         deal_id: int,
         organization_id: int,
     ) -> Deal:
-        
+
         deal = await self.deal_repo.get_by_id(deal_id)
 
         if not deal or deal.organization_id != organization_id:
@@ -93,7 +95,7 @@ class DealService:
         amount: Decimal = Decimal("0"),
         currency: str = "USD",
     ) -> Deal:
-       
+
         # Verify contact belongs to same organization
         contact = await self.contact_repo.get_by_id(contact_id)
         if not contact or contact.organization_id != organization_id:
@@ -117,7 +119,7 @@ class DealService:
         membership: OrganizationMember,
         **kwargs,
     ) -> Deal:
-        
+
         deal = await self.get_deal(deal_id, organization_id)
 
         # Check permissions
@@ -133,8 +135,8 @@ class DealService:
             await self.activity_repo.create_status_changed(
                 deal_id=deal.id,
                 author_id=membership.user_id,
-                old_status=deal.status.value,
-                new_status=new_status.value,
+                old_status=get_enum_value(deal.status),
+                new_status=get_enum_value(new_status),
             )
 
         # Validate stage change
@@ -145,8 +147,8 @@ class DealService:
             await self.activity_repo.create_stage_changed(
                 deal_id=deal.id,
                 author_id=membership.user_id,
-                old_stage=deal.stage.value,
-                new_stage=new_stage.value,
+                old_stage=get_enum_value(deal.stage),
+                new_stage=get_enum_value(new_stage),
             )
 
         # Validate contact if changing
@@ -164,7 +166,7 @@ class DealService:
         organization_id: int,
         membership: OrganizationMember,
     ) -> None:
-        
+
         deal = await self.get_deal(deal_id, organization_id)
 
         if not membership.can_manage_all_entities():
@@ -179,7 +181,7 @@ class DealService:
         new_status: DealStatus,
         new_amount: Decimal | None,
     ) -> None:
-        
+
         amount = new_amount if new_amount is not None else deal.amount
 
         # Cannot close as won with amount <= 0
@@ -192,7 +194,7 @@ class DealService:
         new_stage: DealStage,
         membership: OrganizationMember,
     ) -> None:
-        
+
         if DealStage.is_backward_transition(current_stage, new_stage):
             if not membership.can_rollback_stage():
                 raise InvalidStageTransitionException()

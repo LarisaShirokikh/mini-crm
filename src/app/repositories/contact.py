@@ -21,7 +21,9 @@ class ContactRepository(BaseRepository[Contact]):
         owner_id: int | None = None,
     ) -> list[Contact]:
         """Get contacts for organization with filters."""
-        query = select(Contact).where(Contact.organization_id == organization_id)
+        query = select(Contact).where(
+            Contact.organization_id == organization_id
+        )
 
         if search:
             search_filter = or_(
@@ -64,7 +66,6 @@ class ContactRepository(BaseRepository[Contact]):
     async def has_deals(self, contact_id: int) -> bool:
         """Check if contact has any deals."""
         from app.models.deal import Deal
-        
         query = select(func.count()).select_from(Deal).where(
             Deal.contact_id == contact_id
         )
